@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Entity;
-use App\Models\Category;
-use App\Models\Tag;
-use App\Models\Application;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
+use App\Models\Category;
+use App\Models\Entity;
+use App\Models\Tag;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // Ajout pour la validation
 
 class ApplicationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Affiche la liste des applications.
      */
     public function index()
     {
@@ -20,13 +21,20 @@ class ApplicationController extends Controller
         return view('admin.applications.index', compact('applications'));
     }
 
+    /**
+     * Affiche le formulaire de création.
+     */
     public function create()
     {
         $categories = Category::all();
-        $tags = Tag::all(); // <-- Ajoutez cette ligne
-        return view('admin.applications.create', compact('categories', 'tags')); // <-- Modifiez cette ligne
+        $tags = Tag::all();
+        $icons = $this->getIconList(); // On récupère la liste des icônes
+        return view('admin.applications.create', compact('categories', 'tags', 'icons'));
     }
 
+    /**
+     * Enregistre une nouvelle application.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -34,25 +42,33 @@ class ApplicationController extends Controller
             'url' => 'required|url',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'icon' => 'nullable|string',
+            'icon' => ['nullable', 'string', Rule::in(array_keys($this->getIconList()))],
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
 
-        $application = Application::create($request->except('tags'));
-        $application->tags()->sync($request->input('tags', [])); // <-- Ajoutez cette ligne pour synchroniser les tags
+        $application = Application::create($request->all());
+        $application->tags()->sync($request->input('tags', []));
 
         return redirect()->route('admin.applications.index')->with('success', 'Application créée avec succès.');
     }
 
+    /**
+     * Affiche le formulaire d'édition.
+     */
     public function edit(Application $application)
     {
         $categories = Category::all();
-        $tags = Tag::all(); // <-- Ajoutez cette ligne
+        $tags = Tag::all();
         $applicationTags = optional($application->tags)->pluck('id')->toArray() ?? [];
-        return view('admin.applications.edit', compact('application', 'categories', 'tags', 'applicationTags'));
+        $icons = $this->getIconList(); // On récupère la liste des icônes
+
+        return view('admin.applications.edit', compact('application', 'categories', 'tags', 'applicationTags', 'icons'));
     }
 
+    /**
+     * Met à jour une application.
+     */
     public function update(Request $request, Application $application)
     {
         $request->validate([
@@ -60,17 +76,29 @@ class ApplicationController extends Controller
             'url' => 'required|url',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'icon' => 'nullable|string',
+            'icon' => ['nullable', 'string', Rule::in(array_keys($this->getIconList()))],
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
 
-        $application->update($request->except('tags'));
-        $application->tags()->sync($request->input('tags', [])); // <-- Ajoutez cette ligne pour synchroniser les tags
+        $application->update($request->all());
+        $application->tags()->sync($request->input('tags', []));
 
         return redirect()->route('admin.applications.index')->with('success', 'Application mise à jour avec succès.');
     }
 
+    /**
+     * Supprime une application.
+     */
+    public function destroy(Application $application)
+    {
+        $application->delete();
+        return redirect()->route('admin.applications.index')->with('success', 'Application supprimée avec succès.');
+    }
+
+    /**
+     * Affiche la page de gestion des entités pour une application.
+     */
     public function manageEntitiesShow(Application $application)
     {
         $entities = Entity::all();
@@ -84,12 +112,37 @@ class ApplicationController extends Controller
      */
     public function manageEntitiesUpdate(Request $request, Application $application)
     {
-        // La méthode sync() est parfaite pour les relations Many-to-Many.
-        // Elle synchronise la table pivot avec le tableau d'IDs fourni.
         $application->entities()->sync($request->input('entities', []));
 
         return redirect()->route('admin.applications.index')->with('success', 'Les entités pour l\'application ont été mises à jour.');
     }
 
-    // ... implémentez edit, update, destroy de la même manière
+    /**
+     * Retourne une liste d'icônes prédéfinies.
+     */
+    private function getIconList(): array
+    {
+        return [
+            'fas fa-server' => 'Server',
+            'fas fa-database' => 'Database',
+            'fas fa-cogs' => 'Cogs / Settings',
+            'fas fa-user-shield' => 'Admin / Security',
+            'fas fa-users' => 'Users / Group',
+            'fas fa-terminal' => 'Terminal / Console',
+            'fas fa-code' => 'Code / Development',
+            'fab fa-gitlab' => 'GitLab',
+            'fab fa-docker' => 'Docker',
+            'fab fa-windows' => 'Windows',
+            'fab fa-linux' => 'Linux',
+            'fas fa-network-wired' => 'Network',
+            'fas fa-shield-alt' => 'Security / Shield',
+            'fas fa-envelope' => 'Email / Messaging',
+            'fas fa-chart-bar' => 'Analytics / Stats',
+            'fas fa-desktop' => 'Desktop / Workstation',
+            'fas fa-ticket-alt' => 'Ticket / Support',
+            'fas fa-folder-open' => 'Files / Storage',
+            'fas fa-wifi' => 'WiFi / Wireless',
+            'fas fa-cloud' => 'Cloud',
+        ];
+    }
 }

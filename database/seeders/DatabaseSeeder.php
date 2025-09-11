@@ -11,9 +11,9 @@ class DatabaseSeeder extends Seeder
     {
 
         User::create([
-            'name' => 'Utilisateur Test',
+            'name' => 'Rémi Koutchinski',
             'email' => 'remi.koutchinski@ac-creteil.fr',
-            'password' => bcrypt('$Remi30*'), // Le mot de passe est 'password'
+            'password' => bcrypt('Coucou123!'), // Le mot de passe est 'password'
         ]);
         // Appelle les seeders dans un ordre logique
         $this->call([

@@ -6,14 +6,6 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RedirectController;
 use App\Http\Controllers\DashboardController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -23,7 +15,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/redirect/{application}', [RedirectController::class, 'process'])->name('redirect');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
+Route::get('/', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 require __DIR__ . '/auth.php';

@@ -49,9 +49,6 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            Mon Profil
-                        </x-dropdown-link>
 
                         <!-- Lien vers le panneau admin (conditionnel) -->
                         @if (Auth::user()->is_admin)
@@ -107,9 +104,6 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    Mon Profil
-                </x-responsive-nav-link>
 
                 @if (Auth::user()->is_admin)
                     <x-responsive-nav-link :href="route('admin.dashboard')">
