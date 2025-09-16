@@ -60,7 +60,7 @@ class DashboardController extends Controller
         $categories = Category::orderBy('name')->get();
 
         // ... (logique pour mostUsedApplications)
-        $mostUsedIds = DB::table('application_clicks')->select('application_id', DB::raw('count(*) as click_count'))->where('user_id', Auth::id())->groupBy('application_id')->orderByDesc('click_count')->limit(5)->pluck('application_id');
+        $mostUsedIds = DB::table('application_clicks')->select('application_id', DB::raw('count(*) as click_count'))->where('user_id', Auth::id())->groupBy('application_id')->orderByDesc('click_count')->limit(3)->pluck('application_id');
         $mostUsedApplications = Application::whereIn('id', $mostUsedIds)->get()->sortBy(function ($app) use ($mostUsedIds) {
             return array_search($app->id, $mostUsedIds->toArray());
         });

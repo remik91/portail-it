@@ -10,7 +10,7 @@
 
     <!-- DSFR STYLES -->
     {{-- DSFR CSS 1.14 (dernière version stable au 2025-09) --}}
-
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
 
     {{-- Icônes DSFR --}}
 
@@ -20,27 +20,18 @@
     <!-- NOTE: Les scripts Vite sont conservés pour le JS applicatif (comme Alpine.js) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-
+    
 </head>
 
-<body lang="fr" data-rsevent-id="rs_724407">
-    <noscript>
-        <div class="fr-container fr-mb-10v" id="top">
-            <p class="sp-text--center">Javascript est desactivé dans votre navigateur.</p>
-        </div>
-    </noscript>
+<body class="fr-mb-12w">
     <div class="fr-skiplinks">
-        <nav class="fr-container" role="navigation" aria-label="Accès rapide" lang="fr">
-            <ul class="fr-skiplinks__list">
-                <li><a class="fr-link" href="#main" data-fr-js-link-actionee="true">Contenu</a></li>
-                <li class="sp-display-lg"><a class="fr-link" href="#header-navigation"
-                        data-fr-js-link-actionee="true">Menu</a></li>
-                <li class="sp-display-lg"><a class="fr-link" href="#header-search-main"
-                        data-fr-js-link-actionee="true">Recherche</a></li>
-                <li><a class="fr-link" href="#footer" data-fr-js-link-actionee="true">Pied de page</a></li>
-            </ul>
+        <nav>
+            <a class="fr-link" href="#content">Contenu</a>
+            <a class="fr-link" href="#fr-navigation-main">Menu</a>
+            <a class="fr-link" href="#fr-footer">Pied de page</a>
         </nav>
     </div>
+
     <header role="banner" class="fr-header">
         <div class="fr-header__body">
             <div class="fr-container">
@@ -64,8 +55,8 @@
                             <a href="{{ route('dashboard') }}" title="Accueil - {{ config('app.name', 'Portail IT') }}">
                                 <p class="fr-header__service-title">{{ config('app.name', 'Portail IT') }}</p>
                             </a>
-                            <p class="fr-header__service-tagline">Direction Régionale Académique des Systèmes
-                                d'Information</p>
+                            <p class="fr-header__service-tagline">Direction Régionale Académique des systèmes
+                                d’information</p>
                         </div>
                     </div>
                     <div class="fr-header__tools">
@@ -73,13 +64,13 @@
                             @auth
                                 <ul class="fr-btns-group">
                                     <li>
-                                        <a class="fr-btn fr-icon-account-circle-line" href="">
+                                        <a class="fr-btn fr-icon-account-circle-line" href="{{ route('profile.edit') }}">
                                             {{ Auth::user()->name }}
                                         </a>
                                     </li>
                                     @if (Auth::user()->is_admin)
                                         <li>
-                                            <a class="fr-btn fr-icon-settings-5-fill" href="{{ route('admin.dashboard') }}">
+                                            <a class="fr-btn fr-icon-settings-4-line" href="{{ route('admin.dashboard') }}">
                                                 Panneau Admin
                                             </a>
                                         </li>
@@ -100,31 +91,20 @@
                 </div>
             </div>
         </div>
-        <div class="fr-header__menu fr-modal" id="header-menu" aria-labelledby="header-menu-btn">
-            <div class="fr-container">
-                <button aria-controls="header-menu" title="Fermer" type="button" id="button-46"
-                    class="fr-btn--close fr-btn">Fermer</button>
-                <div class="fr-header__menu-links">
-                </div>
-                <nav class="fr-nav" id="header-navigation" role="navigation" aria-label="Menu principal">
-                    <ul class="fr-nav__list">
-                        <li><a class="fr-nav__link" href="{{ route('dashboard') }}">Accueil</a></li>
-                        <li><a class="fr-nav__link"
-                                href="{{ route('dashboard', ['filter' => 'favorites']) }}">Favoris</a></li>
-                        @if (Auth::user()->is_admin)
-                            <li><a class="fr-nav__link" href="{{ route('admin.dashboard') }}">Administration</a></li>
-                        @endif
-                    </ul>
-                </nav>
-            </div>
-        </div>
     </header>
 
-    <main id="contenu" role="main" class="fr-container fr-pt-4w fr-pb-6w">
+    <main role="main" id="content">
+        <!-- Slot pour le header de la page (titre) -->
+        @if (isset($header))
+            <div class="fr-container fr-py-5w">
+                {{ $header }}
+            </div>
+        @endif
+
+        <!-- Slot pour le contenu principal de la page -->
         {{ $slot }}
     </main>
 
-    {{-- FOOTER --}}
     <footer class="fr-footer" role="contentinfo" id="fr-footer">
         <div class="fr-container">
             <div class="fr-footer__body">
@@ -161,4 +141,12 @@
         </div>
     </footer>
 
+    <!-- DSFR SCRIPTS -->
+    <script type="module" src="https://unpkg.com/@gouvfr/dsfr@1.10.1/dist/dsfr.module.min.js"></script>
+    <script type="text/javascript" nomodule src="https://unpkg.com/@gouvfr/dsfr@1.10.1/dist/dsfr.nomodule.min.js"></script>
+
+    <!-- Permet aux pages d'ajouter des scripts spécifiques -->
+    @stack('scripts')
 </body>
+
+</html>

@@ -54,7 +54,43 @@
                     <textarea class="form-control" id="description" name="description" rows="3" required>{{ old('description', $application->description) }}</textarea>
                 </div>
 
+                <hr>
+
+                <h5>Tags</h5>
                 <div class="row">
+                    @foreach ($tags as $tag)
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}"
+                                    id="tag-{{ $tag->id }}" @if (in_array($tag->id, old('tags', $applicationTags))) checked @endif>
+                                <label class="form-check-label" for="tag-{{ $tag->id }}">
+                                    {{ $tag->name }}
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <h5 class="mt-4">Visuel</h5>
+                <p class="text-muted">Choisissez un logo (prioritaire) ou une icône.</p>
+
+                <div class="row">
+                    <!-- Champ Logo -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo Personnalisé (PNG, JPG, SVG...)</label>
+                            <input class="form-control" type="file" id="logo" name="logo">
+                        </div>
+                        @if ($application->logo_path)
+                            <div class="mb-3">
+                                <p>Logo actuel :</p>
+                                <img src="{{ asset('storage/' . $application->logo_path) }}"
+                                    alt="Logo de {{ $application->name }}" style="max-height: 80px; border-radius: 8px;">
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Champ Icône -->
                     <div class="col-md-6">
                         <div class="mb-3" x-data="{ selectedIcon: '{{ old('icon', $application->icon ?? '') }}' }">
                             <label for="icon" class="form-label">Icône</label>
@@ -75,23 +111,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <hr>
-
-                <h5>Tags</h5>
-                <div class="row">
-                    @foreach ($tags as $tag)
-                        <div class="col-md-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}"
-                                    id="tag-{{ $tag->id }}" @if (in_array($tag->id, old('tags', $applicationTags))) checked @endif>
-                                <label class="form-check-label" for="tag-{{ $tag->id }}">
-                                    {{ $tag->name }}
-                                </label>
-                            </div>
-                        </div>
-                    @endforeach
                 </div>
 
                 <div class="mt-4">

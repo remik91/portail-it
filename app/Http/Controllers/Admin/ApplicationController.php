@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Application;
-use App\Models\Category;
-use App\Models\Entity;
 use App\Models\Tag;
+use App\Models\Entity;
+use App\Models\Category;
+use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule; // Ajout pour la validation
 
 class ApplicationController extends Controller
@@ -28,26 +29,31 @@ class ApplicationController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
-        $icons = $this->getIconList(); // On récupère la liste des icônes
+        $icons = $this->getIconList();
         return view('admin.applications.create', compact('categories', 'tags', 'icons'));
     }
+
 
     /**
      * Enregistre une nouvelle application.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'required|url',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'icon' => ['nullable', 'string', Rule::in(array_keys($this->getIconList()))],
-            'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id',
+            'icon' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validation du logo
+            'tags' => 'nullable|array'
         ]);
 
-        $application = Application::create($request->all());
+        if ($request->hasFile('logo')) {
+            $validated['logo_path'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        $application = Application::create($validated);
         $application->tags()->sync($request->input('tags', []));
 
         return redirect()->route('admin.applications.index')->with('success', 'Application créée avec succès.');
@@ -61,37 +67,42 @@ class ApplicationController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         $applicationTags = optional($application->tags)->pluck('id')->toArray() ?? [];
-        $icons = $this->getIconList(); // On récupère la liste des icônes
-
+        $icons = $this->getIconList();
         return view('admin.applications.edit', compact('application', 'categories', 'tags', 'applicationTags', 'icons'));
     }
 
-    /**
-     * Met à jour une application.
-     */
     public function update(Request $request, Application $application)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'required|url',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-            'icon' => ['nullable', 'string', Rule::in(array_keys($this->getIconList()))],
-            'tags' => 'nullable|array',
-            'tags.*' => 'exists:tags,id',
+            'icon' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tags' => 'nullable|array'
         ]);
 
-        $application->update($request->all());
+        if ($request->hasFile('logo')) {
+            // Supprimer l'ancien logo s'il existe
+            if ($application->logo_path) {
+                Storage::disk('public')->delete($application->logo_path);
+            }
+            $validated['logo_path'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        $application->update($validated);
         $application->tags()->sync($request->input('tags', []));
 
         return redirect()->route('admin.applications.index')->with('success', 'Application mise à jour avec succès.');
     }
 
-    /**
-     * Supprime une application.
-     */
     public function destroy(Application $application)
     {
+        // Supprimer le logo associé avant de supprimer l'application
+        if ($application->logo_path) {
+            Storage::disk('public')->delete($application->logo_path);
+        }
         $application->delete();
         return redirect()->route('admin.applications.index')->with('success', 'Application supprimée avec succès.');
     }

@@ -51,24 +51,7 @@
                     <textarea class="form-control" id="description" name="description" rows="3" required>{{ old('description') }}</textarea>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3" x-data="{ selectedIcon: '{{ old('icon', 'fas fa-question-circle') }}' }">
-                            <label for="icon" class="form-label">Icône</label>
-                            <div class="input-group">
-                                <span class="input-group-text" style="width: 4rem; justify-content: center;">
-                                    <i :class="selectedIcon" class="fa-2x"></i>
-                                </span>
-                                <select class="form-select" id="icon" name="icon" x-model="selectedIcon">
-                                    <option value="">-- Aucune icône --</option>
-                                    @foreach ($icons as $class => $name)
-                                        <option value="{{ $class }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 <hr>
 
@@ -85,6 +68,48 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+
+                <h5 class="mt-4">Visuel</h5>
+                <p class="text-muted">Choisissez un logo (prioritaire) ou une icône.</p>
+
+                <div class="row">
+                    <!-- Champ Logo -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo Personnalisé (PNG, JPG, SVG...)</label>
+                            <input class="form-control" type="file" id="logo" name="logo">
+                        </div>
+                        @if ($application->logo_path)
+                            <div class="mb-3">
+                                <p>Logo actuel :</p>
+                                <img src="{{ asset('storage/' . $application->logo_path) }}"
+                                    alt="Logo de {{ $application->name }}" style="max-height: 80px; border-radius: 8px;">
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Champ Icône -->
+                    <div class="col-md-6">
+                        <div class="mb-3" x-data="{ selectedIcon: '{{ old('icon', $application->icon ?? '') }}' }">
+                            <label for="icon" class="form-label">Icône</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="width: 4rem; justify-content: center;">
+                                    <i
+                                        class="fa-2x {{ $application->icon ? $application->icon : 'fas fa-question-circle' }}"></i>
+                                </span>
+                                <select class="form-select" id="icon" name="icon" x-model="selectedIcon">
+                                    <option value="">-- Aucune icône --</option>
+                                    @foreach ($icons as $class => $name)
+                                        <option value="{{ $class }}"
+                                            {{ old('icon', $application->icon) == $class ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4">
